@@ -1,63 +1,49 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 public class Servidor {
 
-    public static void main(String[] args) throws Exception{
-        
-        ServerSocket servidor = null;
-        Socket miSocket = null;
+    // Lista global donde guardamos todos los clientes conectados
+    public static List<ServidorHilo> clientes = new ArrayList<>();
+
+    public static void main(String[] args) {
 
         final int PUERTO = 6000;
-        
 
-            try {
+        try {
+            // Se crea el servidor en el puerto indicado
+            ServerSocket servidor = new ServerSocket(PUERTO);
+            System.out.println("Servidor iniciado...");
 
-                servidor = new ServerSocket(PUERTO);
-                System.out.println("Servidor inciado, esperando al cliente");
+            // Bucle infinito para aceptar múltiples clientes
+            while (true) {
 
-                boolean conectado = true;
-                while (conectado) {
-                    miSocket = servidor.accept();
+                // Espera a que un cliente se conecte
+                Socket socket = servidor.accept();
 
-                    //A partir de aca implementamos hilos
-                    DataInputStream in = new DataInputStream(miSocket.getInputStream());
-                    DataOutputStream out = new DataOutputStream(miSocket.getOutputStream());
+                // Flujos de entrada y salida de datos
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
-                    //Mensaje que le envia el servidor al cliente
-                    out.writeUTF("Escribe tu nombre");  
-                    String nombreCliente = in.readUTF();
+                // Se le pide el nombre al cliente
+                out.writeUTF("Escribe tu nombre:");
+                String nombre = in.readUTF();
 
-                    ServidorHilo hilo = new ServidorHilo(in, out, nombreCliente);
-                    hilo.start();
+                // Se crea un hilo para manejar a ese cliente
+                ServidorHilo hilo = new ServidorHilo(socket, in, out, nombre);
 
-                    System.out.println("Creada la conexion con el cliente: " +nombreCliente);
-                    //---------------------------------------------------------------------//
-                    
-    
-                    System.out.println("Esperando instrucciones del cliente");
+                // Se guarda en la lista de clientes
+                clientes.add(hilo);
 
-                    //Lee el mensaje enviado por el cliente
-                    String mensaje = in.readUTF();
-                    
-                    miSocket.close();
+                // Se inicia el hilo
+                hilo.start();
 
-                    System.out.println("Cliente desconectado");
-                }
+                System.out.println("Cliente conectado: " + nombre);
+            }
 
-            } catch (IOException ex) {
-                // TODO Auto-generated catch block
-                ex.printStackTrace();
-            } 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
-
 }

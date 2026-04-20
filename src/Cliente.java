@@ -1,52 +1,37 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Cliente {
-    public static void main(String[] args) throws Exception {
-        
+
+    public static void main(String[] args) {
+
         Scanner input = new Scanner(System.in);
 
-        final String HOST = "172.16.0.2";
+        final String HOST = "localhost";
         final int PUERTO = 6000;
 
-        //Variable de entrada de datos
-        DataInputStream in;
-
-        //Variable de salida de datos
-        DataOutputStream out;
-
         try {
-
+            // Se conecta al servidor
             Socket sc = new Socket(HOST, PUERTO);
 
-            //Inicializacion entrada de datos
-            in = new DataInputStream(sc.getInputStream());
+            DataInputStream in = new DataInputStream(sc.getInputStream());
+            DataOutputStream out = new DataOutputStream(sc.getOutputStream());
 
-            //Inicializacion salida de datos
-            out = new DataOutputStream(sc.getOutputStream());
-
-            //Mostramos el mensaje que nos manda el servidor
+            // Recibe mensaje de bienvenida
             String bienvenida = in.readUTF();
             System.out.println(bienvenida);
 
-            //Le mandamos al servidor el nombre
+            // Envía nombre
             String nombre = input.nextLine();
             out.writeUTF(nombre);
 
-            //Creamos el hilo
+            // Se crea el hilo del cliente
             ClienteHilo hilo = new ClienteHilo(in, out);
             hilo.start();
-            hilo.join(); 
-        
-            //sc.close();
 
         } catch (IOException e) {
-        // TODO Auto-generated catch block
             e.printStackTrace();
-        }   
-
+        }
     }
 }

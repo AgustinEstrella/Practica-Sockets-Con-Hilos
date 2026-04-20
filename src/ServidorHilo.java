@@ -1,145 +1,176 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.Socket;
+import java.util.*;
+import java.time.LocalDateTime;
 
-import java.util.ArrayList;
-import java.util.List;
+public class ServidorHilo extends Thread {
 
-import java.time.LocalDateTime; //Para mostrar la hora
-import java.time.format.DateTimeFormatter; // Para darle formato a la hora
+    private Socket socket;
+    private DataInputStream in;
+    private DataOutputStream out;
+    private String nombreCliente;
 
+    // Constructor
+    public ServidorHilo(Socket socket, DataInputStream in, DataOutputStream out, String nombreCliente) {
+        this.socket = socket;
+        this.in = in;
+        this.out = out;
+        this.nombreCliente = nombreCliente;
+    }
 
-public class ServidorHilo extends Thread{
-        
-        private DataInputStream in;
-        private DataOutputStream out;
-        private String nombreCliente;
+    @Override
+    public void run() {
 
-
-        public ServidorHilo(DataInputStream in, DataOutputStream out, String nombreCliente){
-            this.in = in;
-            this.out = out;
-            this.nombreCliente = nombreCliente;
-        }
-
-        @Override
-        public void run(){
-
-            int opcion;
-
+        try {
+            // Bucle para escuchar constantemente al cliente
             while (true) {
-                
-                try {
-                    opcion = in.readInt();
 
-                    switch (opcion) {
-                        case 1:
-                            LocalDateTime base = LocalDateTime.now(); //Creo la base
-                            DateTimeFormatter elFormato = DateTimeFormatter.ofPattern("E, MMM dd yyyy HH:mm:ss"); //Creo el formato
-                            String horaConFormato = base.format(elFormato);
-                            out.writeUTF(horaConFormato);
-                            break;
-                        
-                        case 2:
-                            String funcion = in.readUTF();
-                            if (funcion.trim().toUpperCase().startsWith("RESOLVE")){
-                                String resultado = calculadoraFunciones(funcion);
-                                out.writeUTF("Resultado de la operacion: " + resultado);
-                            } else {
-                                break;
-                            } 
-                            
-                        case 3:
-                            
-                            break;
-                            
-                        case 4:
-                            
-                            break;
+                // Recibe la opción elegida por el cliente
+                int opcion = in.readInt();
 
-                        default:
-                            out.writeUTF("Solo numeros del 1 al 4");
-                            break;
-                    }
+                switch (opcion) {
 
+                    case 1:
+                        enviarHora();
+                        break;
 
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    case 2:
+                        resolverOperacion();
+                        break;
+
+                    case 3:
+                        listarClientes();
+                        break;
+
+                    case 4:
+                        enviarMensajeATodos();
+                        break;
+
+                    default:
+                        out.writeUTF("Opción inválida");
                 }
             }
-            
+
+        } catch (IOException e) {
+            // Si el cliente se desconecta, lo eliminamos de la lista
+            System.out.println(nombreCliente + " se desconectó.");
+            Servidor.clientes.remove(this);
         }
-    
-    // Extrae la ecuación de las comillas y llama al evaluador
+    }
+
+    // ---------------- FUNCIONES ----------------
+
+    // Envía la fecha y hora actual
+    private void enviarHora() throws IOException {
+        String hora = LocalDateTime.now().toString();
+        out.writeUTF(hora);
+    }
+
+    // Recibe una operación matemática y la resuelve
+    private void resolverOperacion() throws IOException {
+        String funcion = in.readUTF();
+        String resultado = calculadoraFunciones(funcion);
+        out.writeUTF("Resultado: " + resultado);
+    }
+
+    // Envía la lista de clientes conectados
+    private void listarClientes() throws IOException {
+        StringBuilder lista = new StringBuilder("Clientes conectados:\n");
+
+        for (ServidorHilo c : Servidor.clientes) {
+            lista.append("- ").append(c.nombreCliente).append("\n");
+        }
+
+        out.writeUTF(lista.toString());
+    }
+
+    // Envía un mensaje a todos los clientes conectados
+    private void enviarMensajeATodos() throws IOException {
+        String mensaje = in.readUTF();
+
+        for (ServidorHilo c : Servidor.clientes) {
+            c.out.writeUTF(nombreCliente + ": " + mensaje);
+        }
+    }
+
+    // ---------------- CALCULADORA ----------------
+
+    // Procesa el comando RESOLVE
     private static String calculadoraFunciones(String input) {
         try {
-            int primerComilla = input.indexOf('"');
-            int ultimaComilla = input.lastIndexOf('"');
-            
-            if (primerComilla == -1 || ultimaComilla == -1 || primerComilla == ultimaComilla) {
-                return "Error de sintaxis. Usa: RESOLVE \"45*23/54+234\"";
-            }
-            
-            // Extrae solo lo que está entre comillas y quita espacios en blanco
-            String ecuacion = input.substring(primerComilla + 1, ultimaComilla).replace(" ", "");
+            int p1 = input.indexOf('"');
+            int p2 = input.lastIndexOf('"');
 
+            if (p1 == -1 || p2 == -1) {
+                return "Error de sintaxis. Usa: RESOLVE \"5+3*2\"";
+            }
+
+            // Extrae la expresión matemática
+            String ecuacion = input.substring(p1 + 1, p2);
+
+            // La resuelve
             double resultado = resolverEcuacion(ecuacion);
-            
+
             return String.valueOf(resultado);
-            
+
         } catch (Exception e) {
-            return "Error al calcular. Verifica que solo haya numeros y operadores basicos.";
+            return "Error al calcular";
         }
     }
 
-    // Priorizar multiplicaciones/divisiones
+    // Resuelve la ecuación respetando prioridad de operadores
     private static double resolverEcuacion(String ecuacion) {
+
         List<Double> numeros = new ArrayList<>();
         List<Character> operadores = new ArrayList<>();
-        
-        //Parsear el string para separar numeros de operadores
-        StringBuilder tempNum = new StringBuilder();
-        //Recorrer toda la ecuacion
-        for (int i = 0; i < ecuacion.length(); i++) {
-            char c = ecuacion.charAt(i);
-            if (c == '-' && tempNum.length() == 0) {
-                tempNum.append(c);
-            } else if (Character.isDigit(c) || c == '.') {
-                tempNum.append(c);
-            } else if (c == '+' || c == '-' || c == '*' || c == '/') {
-                numeros.add(Double.parseDouble(tempNum.toString()));
+
+        String numero = "";
+
+        // Separa números y operadores
+        for (char c : ecuacion.toCharArray()) {
+
+            if ("+-*/".indexOf(c) >= 0) {
+                numeros.add(Double.parseDouble(numero));
                 operadores.add(c);
-                tempNum.setLength(0); // Limpiar el buffer numerico
+                numero = "";
+            } else {
+                numero += c;
             }
-        } 
-        numeros.add(Double.parseDouble(tempNum.toString())); // Agregar el ultimo numero
-        
-        //Resolver multiplicaciones y divisiones
+        }
+
+        numeros.add(Double.parseDouble(numero));
+
+        // Primero resuelve multiplicación y división
         for (int i = 0; i < operadores.size(); i++) {
+
             char op = operadores.get(i);
+
             if (op == '*' || op == '/') {
+
                 double a = numeros.get(i);
                 double b = numeros.get(i + 1);
-                double resultado = (op == '*') ? (a * b) : (a / b);
-                
-                numeros.set(i, resultado); // Reemplazar el primer numero por el resultado
-                numeros.remove(i + 1);     // Borrar el segundo numero
-                operadores.remove(i);      // Borrar el operador usado
-                i--; // Retroceder el indice porque las listas se achicaron
+
+                double resultado = (op == '*') ? a * b : a / b;
+
+                numeros.set(i, resultado);
+                numeros.remove(i + 1);
+                operadores.remove(i);
+
+                i--;
             }
         }
-        
-        //Resolver sumas y restas de izquierda a derecha
+
+        // Luego suma y resta
         double resultadoFinal = numeros.get(0);
+
         for (int i = 0; i < operadores.size(); i++) {
-            char op = operadores.get(i);
-            double sigNumero = numeros.get(i + 1);
-            if (op == '+') resultadoFinal += sigNumero;
-            if (op == '-') resultadoFinal -= sigNumero;
+
+            if (operadores.get(i) == '+')
+                resultadoFinal += numeros.get(i + 1);
+            else
+                resultadoFinal -= numeros.get(i + 1);
         }
-        
+
         return resultadoFinal;
     }
-
 }

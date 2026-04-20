@@ -1,78 +1,66 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
-import java.io.IOException;
-
+import java.io.*;
 import java.util.Scanner;
 
-
 public class ClienteHilo extends Thread {
-            
-        private DataInputStream in;
-        private DataOutputStream out;
 
-        public ClienteHilo(DataInputStream in, DataOutputStream out){
-            this.in = in;
-            this.out = out;
-        }
+    private DataInputStream in;
+    private DataOutputStream out;
 
-        @Override
-        public void run(){
-            Scanner sc = new Scanner(System.in);
-            int opcion = 0;
-            String mensaje;
+    public ClienteHilo(DataInputStream in, DataOutputStream out) {
+        this.in = in;
+        this.out = out;
+    }
 
-            boolean salir = true; 
+    @Override
+    public void run() {
 
-            while (!salir) {
-                try {
-                        System.out.println("1: Consultar la fecha y hora");
-                        System.out.println("2: Resolver expresión matemática");
-                        System.out.println("3: Listar clientes conectados");
-                        System.out.println("4: Mandar mensaje a todos los clientes");
-                        opcion = sc.nextInt();
-                        out.writeInt(opcion);
+        Scanner sc = new Scanner(System.in);
 
-                        switch (opcion) {
-                            case 1:
-                                sc.nextLine(); //Evitar errores
-                                String horario = in.readUTF();
-                                System.out.println("Dia y hora: " +horario);                                
-                                break;
+        boolean salir = false;
 
-                            case 2:
-                                sc.nextLine();
-                                //Le enviamos la funcion al servidor
-                                System.out.println("Ingrese su formula");
-                                String miFormula = sc.nextLine();
-                                out.writeUTF(miFormula);
+        while (!salir) {
 
-                                //Recibimos el resultado de la funcion
-                                String resultado = in.readUTF();
-                                System.out.println(resultado);
-                                break;
+            try {
+                // Menú de opciones
+                System.out.println("\n1: Hora");
+                System.out.println("2: Resolver operación");
+                System.out.println("3: Ver clientes");
+                System.out.println("4: Enviar mensaje");
 
-                            case 3:
-                                sc.nextLine(); //Evitar errores
+                int opcion = sc.nextInt();
+                sc.nextLine();
 
-                                break;
+                // Enviar opción al servidor
+                out.writeInt(opcion);
 
-                            case 4:
-                                sc.nextLine(); //Evitar errores  
+                switch (opcion) {
 
-                                break;
+                    case 1:
+                        System.out.println("Hora: " + in.readUTF());
+                        break;
 
-                            default:
-                                mensaje = in.readUTF();
-                                System.out.println(mensaje);
-                                break;                      
-                        }
+                    case 2:
+                        System.out.println("Ingrese operación (ej: RESOLVE \"5+3*2\"):");
+                        String op = sc.nextLine();
+                        out.writeUTF(op);
+                        System.out.println(in.readUTF());
+                        break;
 
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    case 3:
+                        System.out.println(in.readUTF());
+                        break;
+
+                    case 4:
+                        System.out.println("Mensaje:");
+                        String msg = sc.nextLine();
+                        out.writeUTF(msg);
+                        break;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                salir = true;
             }
         }
-
-}   
+    }
+}
