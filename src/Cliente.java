@@ -33,6 +33,5 @@ public class Cliente {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        input.close();
     }
 }
