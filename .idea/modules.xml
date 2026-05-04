@@ -5,9 +5,10 @@
       <module fileurl="file://$PROJECT_DIR$/1_ Practica de poo/1_ Practica de poo.iml" filepath="$PROJECT_DIR$/1_ Practica de poo/1_ Practica de poo.iml" />
       <module fileurl="file://$PROJECT_DIR$/2_ Practica base de Java/2_ Practica base de Java.iml" filepath="$PROJECT_DIR$/2_ Practica base de Java/2_ Practica base de Java.iml" />
       <module fileurl="file://$PROJECT_DIR$/4_ Practica de socket/4_ Practica de socket.iml" filepath="$PROJECT_DIR$/4_ Practica de socket/4_ Practica de socket.iml" />
-      <module fileurl="file://$PROJECT_DIR$/3_ Tp1/Comportamiento- Template method/Comportamiento- Template method.iml" filepath="$PROJECT_DIR$/3_ Tp1/Comportamiento- Template method/Comportamiento- Template method.iml" />
-      <module fileurl="file://$PROJECT_DIR$/3_ Tp1/Creacion- Prototype/Creacion- Prototype.iml" filepath="$PROJECT_DIR$/3_ Tp1/Creacion- Prototype/Creacion- Prototype.iml" />
-      <module fileurl="file://$PROJECT_DIR$/3_ Tp1/Estructura- Facade/Estructura- Facade.iml" filepath="$PROJECT_DIR$/3_ Tp1/Estructura- Facade/Estructura- Facade.iml" />
+      <module fileurl="file://$PROJECT_DIR$/6_ Tp2 Principios Solid/6_ Tp2 Principios Solid.iml" filepath="$PROJECT_DIR$/6_ Tp2 Principios Solid/6_ Tp2 Principios Solid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/3_ Tp1 Patrones/Comportamiento- Template method/Comportamiento- Template method.iml" filepath="$PROJECT_DIR$/3_ Tp1 Patrones/Comportamiento- Template method/Comportamiento- Template method.iml" />
+      <module fileurl="file://$PROJECT_DIR$/3_ Tp1 Patrones/Creacion- Prototype/Creacion- Prototype.iml" filepath="$PROJECT_DIR$/3_ Tp1 Patrones/Creacion- Prototype/Creacion- Prototype.iml" />
+      <module fileurl="file://$PROJECT_DIR$/3_ Tp1 Patrones/Estructura- Facade/Estructura- Facade.iml" filepath="$PROJECT_DIR$/3_ Tp1 Patrones/Estructura- Facade/Estructura- Facade.iml" />
       <module fileurl="file://$PROJECT_DIR$/5_ Sockets/Practica base de sockets/Practica base de sockets.iml" filepath="$PROJECT_DIR$/5_ Sockets/Practica base de sockets/Practica base de sockets.iml" />
       <module fileurl="file://$PROJECT_DIR$/Proyectos Programacion_Avanzada-2026.iml" filepath="$PROJECT_DIR$/Proyectos Programacion_Avanzada-2026.iml" />
     </modules>
