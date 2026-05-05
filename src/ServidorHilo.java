@@ -45,7 +45,7 @@ public class ServidorHilo extends Thread {
                     case 4:
                         enviarMensajeATodos();
                         break;
-
+                    
                     default:
                         out.writeUTF("Opción inválida");
                 }
@@ -174,4 +174,5 @@ public class ServidorHilo extends Thread {
 
         return resultadoFinal;
     }
+   
 }
